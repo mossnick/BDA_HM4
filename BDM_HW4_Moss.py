@@ -51,16 +51,13 @@ def run(file_name):
     def expandRows(partId,iterator): 
         for row in iterator:
             start_day = row[1][1][0][:10]
-            end_day = row[1][1][1][:10]
             visits = json.loads(row[1][1][2])
-            # print(visits)
-            int_day_start = int(start_day[-2:])
-            int_day_end = int(end_day[-2:])
             for i in range(0,7):
                 date_obj = datetime.strptime(start_day,"%Y-%m-%d") + timedelta(days=i)
                 yield (date_obj.strftime("%Y-%m-%d"),visits[i])
+    joined_records = valid_places.join(mapped_restaurant_records)
     for k,v in place_naics_dict.items():
-        limited_service_restaurants = valid_places.join(mapped_restaurant_records).filter(lambda x: x[1][0] in v)
+        limited_service_restaurants = joined_records.filter(lambda x: x[1][0] in v)
         day_visits = limited_service_restaurants.mapPartitionsWithIndex(expandRows)
         final_values = day_visits.groupByKey().map(calc_med_hi_lo)
         sp = pyspark.sql.SparkSession(sc)
