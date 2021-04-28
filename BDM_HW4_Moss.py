@@ -1,7 +1,7 @@
 from datetime import datetime
 from datetime import timedelta
 import json
-import statistics
+import numpy as np
 import pyspark
 import os
 import sys
@@ -44,7 +44,7 @@ def run(file_name):
         sorted_values = sorted(list(values))
         mid = len(sorted_values) // 2
         median = (sorted_values[mid] + sorted_values[~mid]) / 2
-        std = statistics.stdev(sorted_values)
+        std = np.std(sorted_values)
         low = max(0,median-std)
         hi = median + std
         return (year,kv[0],low,median,hi)
