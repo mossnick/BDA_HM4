@@ -7,6 +7,7 @@ import os
 import sys
 def run(file_name):
     sc = pyspark.SparkContext()
+    sp = pyspark.sql.SparkSession(sc)
     core_places_file = 'hdfs:///data/share/bdm/core-places-nyc.csv'
     weekly_pattern_file = 'hdfs:///data/share/bdm/weekly-patterns-nyc-2019-2020/*'
     output_prefix = file_name
@@ -59,7 +60,6 @@ def run(file_name):
         limited_service_restaurants = joined_records.filter(lambda x: x[1][0] in v)
         day_visits = limited_service_restaurants.mapPartitionsWithIndex(expandRows)
         final_values = day_visits.groupByKey().map(calc_med_hi_lo)
-        sp = pyspark.sql.SparkSession(sc)
         if final_values.isEmpty():
             continue
         df = sp.createDataFrame(data=final_values).toDF("year","date", "low","median","high")
