@@ -7,8 +7,8 @@ import os
 import sys
 def run(file_name):
     sc = pyspark.SparkContext()
-    core_places_file = 'hdfs:///data/share/bdm/core-places-nyc.csv'
-    weekly_pattern_file = 'hdfs:///data/share/bdm/weekly-patterns-nyc-2019-2020/*'
+    core_places_file = '../../data/share/bdm/core-places-nyc.csv'
+    weekly_pattern_file = '../../data/share/bdm/weekly-patterns-nyc-2019-2020/*'
     output_prefix = file_name
     os.mkdir(output_prefix)
     def extract_safegraphid_naics_code(partId,records):
