@@ -1,7 +1,7 @@
 from datetime import datetime
 from datetime import timedelta
 import json
-import numpy as np
+import math
 import pyspark
 import os
 import sys
@@ -11,6 +11,7 @@ def run(file_name):
     core_places_file = 'hdfs:///data/share/bdm/core-places-nyc.csv'
     weekly_pattern_file = 'hdfs:///data/share/bdm/weekly-patterns-nyc-2019-2020/*'
     output_prefix = file_name
+    os.mkdir(output_prefix)
     def extract_safegraphid_naics_code(partId,records):
         if partId==0:
             next(records)
@@ -38,16 +39,24 @@ def run(file_name):
 
     place_naics_dict = {'big_box_grocers':['452210','452311'],'convenience_stores':['445120'], 'drinking_places':['722410'],'full_service_restaurants':['722511'],'limited_service_restaurants':['722513'],'pharmacies_and_drug_stores':['446110','446191'],
                         'snack_and_bakeries':['311811','722515'],'specialty_food_stores':[ '445210', '445220', '445230', '445291', '445292','445299'],'supermarkets_except_convenience_stores':['445110']}
+    
+    def custom_std(data, ddof=1):
+        n = len(data)
+        mean = sum(data) / n
+        v = sum((x - mean) ** 2 for x in data) / (n - ddof)
+        return math.sqrt(n)
+
     def calc_med_hi_lo(kv):
         values = kv[1]
         year = kv[0][:4]
         sorted_values = sorted(list(values))
         mid = len(sorted_values) // 2
         median = (sorted_values[mid] + sorted_values[~mid]) / 2
-        std = np.std(sorted_values)
+        std = custom_std(sorted_values)
         low = max(0,median-std)
         hi = median + std
         return (year,kv[0],low,median,hi)
+
     def expandRows(partId,iterator): 
         for row in iterator:
             start_day = row[1][1][0][:10]
@@ -60,11 +69,13 @@ def run(file_name):
         limited_service_restaurants = joined_records.filter(lambda x: x[1][0] in v)
         day_visits = limited_service_restaurants.mapPartitionsWithIndex(expandRows)
         final_values = day_visits.groupByKey().map(calc_med_hi_lo)
+        
         if final_values.isEmpty():
             continue
         df = sp.createDataFrame(data=final_values).toDF("year","date", "low","median","high")
         df = df.orderBy("date")
-        df.write.csv("{output_prefix}/{k}".format(output_prefix=output_prefix, k=k))
+        df.show()
+        df.write.csv("{output_prefix}/{k}.".format(output_prefix=output_prefix, k=k))
 
 if __name__ == "__main__":
     file_name = sys.argv[1]
