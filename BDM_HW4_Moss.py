@@ -10,7 +10,6 @@ def run(file_name):
     core_places_file = '../../data/share/bdm/core-places-nyc.csv'
     weekly_pattern_file = '../../data/share/bdm/weekly-patterns-nyc-2019-2020/*'
     output_prefix = file_name
-    os.mkdir(output_prefix)
     def extract_safegraphid_naics_code(partId,records):
         if partId==0:
             next(records)
@@ -65,8 +64,7 @@ def run(file_name):
             continue
         df = sp.createDataFrame(data=final_values).toDF("year","date", "low","median","high")
         df = df.orderBy("date")
-        df.show()
-        df.write.csv("{output_prefix}/{k}.".format(output_prefix=output_prefix, k=k))
+        df.write.csv("{output_prefix}/{k}".format(output_prefix=output_prefix, k=k))
 
 if __name__ == "__main__":
     file_name = sys.argv[1]
