@@ -76,7 +76,6 @@ def run(file_name):
         df = df.orderBy("date")
         df.show()
         df.write.csv("{output_prefix}/{k}".format(output_prefix=output_prefix, k=k))
-        
 
 if __name__ == "__main__":
     file_name = sys.argv[1]
