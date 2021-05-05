@@ -75,7 +75,7 @@ def run(file_name):
         df = sp.createDataFrame(data=final_values).toDF("year","date", "low","median","high")
         df = df.orderBy("date")
         df.show()
-        df.write.csv("{output_prefix}/{k}".format(output_prefix=output_prefix, k=k), header='true')
+        df.write.csv("{output_prefix}/{k}".format(output_prefix=output_prefix, k=k))
 
 if __name__ == "__main__":
     file_name = sys.argv[1]
