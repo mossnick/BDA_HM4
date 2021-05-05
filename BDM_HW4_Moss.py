@@ -55,7 +55,7 @@ def run(file_name):
         std = custom_std(sorted_values)
         low = max(0,median-std)
         hi = median + std
-        return (year,kv[0],low,median,hi)
+        return (year,"2020"+kv[0][4:],low,median,hi)
 
     def expandRows(partId,iterator): 
         for row in iterator:
@@ -66,7 +66,7 @@ def run(file_name):
                 yield (date_obj.strftime("%Y-%m-%d"),visits[i])
     joined_records = valid_places.join(mapped_restaurant_records)
     for k,v in place_naics_dict.items():
-        limited_service_restaurants = joined_records.filter(lambda x: x[1][0] in v)
+        limited_service_restaurants = joined_records.filter(lambda x: x[1][0] in v and x[1][1][0][:4] in ["2019","2020"] and x[1][1][1][:4] in ["2019","2020"])
         day_visits = limited_service_restaurants.mapPartitionsWithIndex(expandRows)
         final_values = day_visits.groupByKey().map(calc_med_hi_lo)
         
